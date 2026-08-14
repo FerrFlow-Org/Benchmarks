@@ -1,9 +1,19 @@
+<div align="center">
+
 # FerrFlow Benchmarks
 
+**Reusable GitHub Action for FerrFlow performance benchmarks.**
+
+Runs the micro and full suites, compares against competing release tools,<br />
+and fails the PR when a regression crosses the threshold.
+
+[![CI](https://github.com/FerrLabs/Benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/FerrLabs/Benchmarks/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/FerrLabs/Benchmarks)](LICENSE)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/FerrLabs/Benchmarks/badge)](https://scorecard.dev/viewer/?uri=github.com/FerrLabs/Benchmarks)
 
-Reusable GitHub Action for running FerrFlow benchmarks and detecting performance regressions.
+[FerrFlow](https://github.com/FerrLabs/FerrFlow) | [Fixtures](https://github.com/FerrLabs/Fixtures)
+
+</div>
 
 ## Usage
 
@@ -41,10 +51,10 @@ The full benchmark runs every fixture sequentially, so wall-clock is the sum of
 them all. To spread it over runners, generate the fixtures once, run one shard
 per fixture, then aggregate:
 
-1. **Shards** — one job per fixture, each with `shard: true`, a `fixtures-dir`
+1. **Shards**: one job per fixture, each with `shard: true`, a `fixtures-dir`
    holding only its own fixture, and `binary-dir` pointing at a prebuilt
    binary. Each uploads its `benchmarks/results/latest.json` as a partial.
-2. **Aggregate** — one job that downloads every partial into a directory and
+2. **Aggregate**: one job that downloads every partial into a directory and
    passes it as `merge-partials`. It merges them and runs the regression check,
    PR comment and uploads once, over the whole result.
 
@@ -77,6 +87,11 @@ Runs end-to-end benchmarks with [hyperfine](https://github.com/sharkdp/hyperfine
 - Measures execution time, memory usage, and binary size
 - Compares against stored baseline and detects regressions (configurable threshold, default 25%)
 
+The head-to-head against competitors pins `ferrflow --jobs 1`. Competing tools are
+single-threaded, so letting FerrFlow use every core would measure the runner rather than the
+tool. Parallel speedup is reported separately as `ferrflow_parallel` alongside `runner_cores`,
+and never as the headline number.
+
 ## Requirements
 
 The calling workflow must provide:
@@ -85,5 +100,5 @@ The calling workflow must provide:
 - Rust cache (`Swatinem/rust-cache@v2`)
 - Node.js (for full benchmarks with competitors): `actions/setup-node@v6`
 - A project with `cargo bench --bench ferrflow_benchmarks` (for micro)
-- A directory of JSON fixture definitions, passed via the `definitions` input — the action generates the fixtures with [`FerrLabs/Fixtures`](https://github.com/FerrLabs/Fixtures) (for full)
-- A project that builds a release binary with `cargo build --release` — the action puts `target/release` on `PATH` and benchmarks it (for full)
+- A directory of JSON fixture definitions, passed via the `definitions` input. The action generates the fixtures with [`FerrLabs/Fixtures`](https://github.com/FerrLabs/Fixtures) (for full)
+- A project that builds a release binary with `cargo build --release`. The action puts `target/release` on `PATH` and benchmarks it (for full)
